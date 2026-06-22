@@ -1,0 +1,217 @@
+.page {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding-bottom: 40rpx;
+}
+
+.header {
+  background: linear-gradient(135deg, #4A90E2, #357ABD);
+  padding: 48rpx 32rpx 64rpx;
+  color: white;
+}
+
+.headerTitle {
+  font-size: 40rpx;
+  font-weight: 700;
+  margin-bottom: 12rpx;
+}
+
+.headerDesc {
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+
+.privacyBadge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  margin-top: 20rpx;
+  font-size: 22rpx;
+}
+
+.content {
+  padding: 0 24rpx;
+  margin-top: -32rpx;
+}
+
+.customerCard {
+  background: white;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.customerAvatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 48rpx;
+  background: linear-gradient(135deg, #4A90E2, #722ED1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.customerAvatarText {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: white;
+}
+
+.customerInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.customerName {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1D2129;
+  margin-bottom: 8rpx;
+}
+
+.customerProject {
+  font-size: 26rpx;
+  color: #4E5969;
+}
+
+.customerNode {
+  font-size: 24rpx;
+  color: #86909C;
+  margin-top: 4rpx;
+}
+
+.sectionCard {
+  background: white;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  margin-bottom: 24rpx;
+}
+
+.sectionTitle {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1D2129;
+  margin-bottom: 24rpx;
+  display: flex;
+  align-items: center;
+}
+
+.sectionIcon {
+  margin-right: 12rpx;
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+
+.photoItem {
+  background: #f7f8fa;
+  border-radius: 16rpx;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 3 / 4;
+}
+
+.photoImage {
+  width: 100%;
+  height: 100%;
+  background: #e5e6eb;
+}
+
+.photoLabel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: 24rpx 16rpx 16rpx;
+}
+
+.photoLabelText {
+  color: white;
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.photoTime {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.emptyPhotos {
+  text-align: center;
+  padding: 64rpx 32rpx;
+  color: #86909C;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+.emptyText {
+  font-size: 28rpx;
+}
+
+.errorState {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64rpx;
+  background: #f5f7fa;
+}
+
+.errorIcon {
+  font-size: 120rpx;
+  margin-bottom: 32rpx;
+}
+
+.errorTitle {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1D2129;
+  margin-bottom: 16rpx;
+}
+
+.errorDesc {
+  font-size: 28rpx;
+  color: #86909C;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.footer {
+  padding: 48rpx 32rpx 0;
+  text-align: center;
+}
+
+.footerText {
+  font-size: 22rpx;
+  color: #86909C;
+  line-height: 1.6;
+}
+
+.watermark {
+  font-size: 20rpx;
+  color: #c9cdd4;
+  margin-top: 16rpx;
+}

@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback } from 'react';
 import { View, Text, Button, Image, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
+import classnames from 'classnames';
 import styles from './index.module.scss';
 import { useCustomer } from '@/store/CustomerContext';
 import StatusTag from '@/components/StatusTag';
@@ -29,9 +30,9 @@ const ConfirmPage: React.FC = () => {
     return photosToConfirm.filter(p => p.status === 'confirmed' || p.status === 'completed').length;
   }, [photosToConfirm]);
 
-  const allConfirmed = useMemo(() => {
-    return photosToConfirm.length > 0 && confirmedCount === photosToConfirm.length;
-  }, [photosToConfirm, confirmedCount]);
+  const unconfirmedCount = useMemo(() => {
+    return photosToConfirm.filter(p => p.status === 'captured').length;
+  }, [photosToConfirm]);
 
   const handleConfirm = useCallback((photoId: string) => {
     if (!currentCustomer) return;
@@ -86,25 +87,21 @@ const ConfirmPage: React.FC = () => {
     if (!currentCustomer) return;
 
     const unconfirmed = photosToConfirm.filter(p => p.status === 'captured');
+    let tipText = '';
     if (unconfirmed.length > 0) {
-      const confirmed = await showModal(
-        `还有 ${unconfirmed.length} 张照片未确认，是否先确认这些照片？`,
-        '确认提示'
-      );
-      if (confirmed) {
-        unconfirmed.forEach(photo => {
-          confirmPhoto(currentCustomer.id, photo.id);
-        });
-      } else {
-        return;
-      }
+      tipText = `其中 ${unconfirmed.length} 张未逐张确认的照片将自动标记为"清晰"，`;
     }
+    tipText += `所有 ${photosToConfirm.length} 张照片将归入"${currentCustomer.treatmentNode}"疗程节点，是否确认？`;
 
-    const confirmed = await showModal(
-      '所有照片将自动归入"首次治疗"疗程节点，是否确认？',
-      '完成确认'
-    );
+    const confirmed = await showModal(tipText, '一键确认并归档');
     if (!confirmed) return;
+
+    if (unconfirmed.length > 0) {
+      unconfirmed.forEach(photo => {
+        confirmPhoto(currentCustomer.id, photo.id);
+      });
+      console.log('[ConfirmPage] 批量确认', unconfirmed.length, '张照片');
+    }
 
     updateCustomerStatus(currentCustomer.id, 'completed');
     showToast('照片已归档', 'success');
@@ -242,14 +239,14 @@ const ConfirmPage: React.FC = () => {
         <View className={styles.progressInfo}>
           <Text className={styles.progressText}>
             已确认 {confirmedCount} / {photosToConfirm.length} 张
+            {unconfirmedCount > 0 && ` · 还有 ${unconfirmedCount} 张待确认`}
           </Text>
         </View>
         <Button
           className={styles.submitBtn}
           onClick={handleSubmit}
-          disabled={!allConfirmed}
         >
-          <Text>全部确认并归档</Text>
+          <Text>📸 一键确认并归档</Text>
         </Button>
       </View>
     </View>

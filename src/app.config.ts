@@ -4,7 +4,8 @@ export default defineAppConfig({
     'pages/capture/index',
     'pages/confirm/index',
     'pages/compare/index',
-    'pages/pending/index'
+    'pages/pending/index',
+    'pages/share/index'
   ],
   window: {
     backgroundTextStyle: 'light',

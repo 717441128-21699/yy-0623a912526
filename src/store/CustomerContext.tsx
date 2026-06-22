@@ -1,7 +1,10 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import Taro from '@tarojs/taro';
 import { Customer, PhotoItem } from '@/types';
 import { mockCustomers } from '@/data/mockData';
 import { generateId, showToast } from '@/utils';
+
+const STORAGE_KEY = 'clinic_photo_archive_data_v1';
 
 interface CustomerContextType {
   customers: Customer[];
@@ -19,9 +22,54 @@ interface CustomerContextType {
 
 const CustomerContext = createContext<CustomerContextType | undefined>(undefined);
 
+const loadFromStorage = (): Customer[] => {
+  try {
+    const saved = Taro.getStorageSync(STORAGE_KEY);
+    if (saved && Array.isArray(saved) && saved.length > 0) {
+      console.log('[CustomerContext] 从本地存储加载数据，共', saved.length, '位客户');
+      return saved;
+    }
+  } catch (e) {
+    console.warn('[CustomerContext] 读取本地存储失败，使用初始Mock数据');
+  }
+  return mockCustomers;
+};
+
+const saveToStorage = (data: Customer[]) => {
+  try {
+    Taro.setStorageSync(STORAGE_KEY, data);
+    console.log('[CustomerContext] 已保存到本地存储，共', data.length, '位客户');
+  } catch (e) {
+    console.error('[CustomerContext] 保存到本地存储失败:', e);
+  }
+};
+
 export const CustomerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
+  const [customers, setCustomers] = useState<Customer[]>(() => loadFromStorage());
   const [currentCustomer, setCurrentCustomer] = useState<Customer | null>(null);
+
+  useEffect(() => {
+    saveToStorage(customers);
+  }, [customers]);
+
+  useEffect(() => {
+    const savedCurrent = Taro.getStorageSync(STORAGE_KEY + '_current');
+    if (savedCurrent) {
+      const found = customers.find(c => c.id === savedCurrent);
+      if (found) {
+        setCurrentCustomer(found);
+        console.log('[CustomerContext] 恢复当前客户:', found.name);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (currentCustomer) {
+      Taro.setStorageSync(STORAGE_KEY + '_current', currentCustomer.id);
+    } else {
+      Taro.removeStorageSync(STORAGE_KEY + '_current');
+    }
+  }, [currentCustomer]);
 
   const updateCustomerPhoto = useCallback((customerId: string, photoId: string, updates: Partial<PhotoItem>) => {
     setCustomers(prev => prev.map(customer => {
@@ -82,7 +130,6 @@ export const CustomerProvider: React.FC<{ children: ReactNode }> = ({ children }
       status: 'confirmed',
       confirmedAt: new Date().toISOString()
     });
-    showToast('照片已确认', 'success');
     console.log('[CustomerContext] 确认照片', { customerId, photoId });
   }, [updateCustomerPhoto]);
 

@@ -1,5 +1,7 @@
 import Taro from '@tarojs/taro';
 
+const SHARE_TOKEN_KEY = 'clinic_share_tokens_v1';
+
 export const formatTime = (date: Date | string): string => {
   const d = new Date(date);
   const hours = d.getHours().toString().padStart(2, '0');
@@ -51,8 +53,34 @@ export const calculatePhotoProgress = (photos: { status: string }[]): { complete
   return { completed, total, percent };
 };
 
-export const getQrCodeUrl = (customerId: string): string => {
-  return `https://picsum.photos/id/200/300/300`;
+export const generateShareToken = (customerId: string): { token: string; expireAt: string; shareUrl: string } => {
+  const token = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  const expireAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  try {
+    const tokens = Taro.getStorageSync(SHARE_TOKEN_KEY) || {};
+    tokens[customerId] = { token, expireAt, createdAt: new Date().toISOString() };
+    Taro.setStorageSync(SHARE_TOKEN_KEY, tokens);
+    console.log('[Utils] 生成分享Token:', { customerId, expireAt });
+  } catch (e) {
+    console.warn('[Utils] 保存分享Token失败:', e);
+  }
+
+  const shareUrl = `/pages/share/index?customerId=${encodeURIComponent(customerId)}&token=${encodeURIComponent(token)}`;
+  return { token, expireAt, shareUrl };
+};
+
+export const getQrCodeUrl = (customerId: string): { qrImageUrl: string; shareUrl: string; token: string; expireAt: string } => {
+  const { token, expireAt, shareUrl } = generateShareToken(customerId);
+
+  const host = 'https://example.miniprogram.com';
+  const fullUrl = `${host}${shareUrl}`;
+  const encodedUrl = encodeURIComponent(fullUrl);
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedUrl}&margin=10`;
+
+  console.log('[Utils] 生成二维码URL:', { fullUrl, qrImageUrl });
+
+  return { qrImageUrl, shareUrl, token, expireAt };
 };
 
 export const debounce = <T extends (...args: any[]) => any>(

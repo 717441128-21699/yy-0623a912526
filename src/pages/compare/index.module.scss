@@ -89,6 +89,25 @@
   max-width: 200rpx;
 }
 
+.noAuthTag {
+  font-size: 20rpx;
+  color: $color-warning;
+  margin-top: 4rpx;
+  display: block;
+}
+
+.emptySection {
+  padding: $spacing-lg;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  text-align: center;
+}
+
+.emptySectionText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
 .selectedCustomer {
   background-color: $color-bg-card;
   border-radius: $radius-lg;
@@ -156,6 +175,25 @@
 .warningText {
   font-size: $font-size-sm;
   color: $color-error;
+  flex: 1;
+}
+
+.successBanner {
+  background-color: rgba(0, 180, 42, 0.08);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  display: flex;
+  align-items: center;
+}
+
+.successIcon {
+  font-size: $font-size-lg;
+  margin-right: $spacing-sm;
+}
+
+.successText {
+  font-size: $font-size-sm;
+  color: $color-success;
   flex: 1;
 }
 
@@ -241,6 +279,25 @@
   font-weight: $font-weight-medium;
 }
 
+.emptyPhotos {
+  padding: $spacing-xl * 2;
+  text-align: center;
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+}
+
+.emptyPhotosIcon {
+  font-size: 80rpx;
+  opacity: 0.4;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.emptyPhotosText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
 .emptyState {
   padding: $spacing-xl * 3 $page-padding;
   text-align: center;
@@ -302,6 +359,10 @@
   }
 }
 
+.disabledBtn {
+  background: linear-gradient(135deg, #86909C 0%, #4E5969 100%) !important;
+}
+
 .qrModal {
   position: fixed;
   top: 0;
@@ -340,6 +401,27 @@
   display: block;
 }
 
+.qrCustomerInfo {
+  background-color: $color-primary-light;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-lg;
+  text-align: left;
+}
+
+.qrCustomerName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.qrCustomerProj {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
 .qrCodeWrapper {
   width: 400rpx;
   height: 400rpx;
@@ -350,6 +432,22 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative;
+}
+
+.qrExpireBadge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(74, 144, 226, 0.95));
+  padding: $spacing-sm;
+}
+
+.qrExpireText {
+  font-size: 20rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
 }
 
 .qrCode {
@@ -362,12 +460,67 @@
   border-radius: $radius-md;
   padding: $spacing-md;
   margin-bottom: $spacing-lg;
+  text-align: left;
+}
+
+.qrLinkLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: block;
+  margin-bottom: $spacing-xs;
 }
 
 .qrLinkText {
   font-size: $font-size-xs;
-  color: $color-text-tertiary;
+  color: $color-text-secondary;
   word-break: break-all;
+  font-family: monospace;
+}
+
+.qrActions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.previewBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background-color: $color-primary-light;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  Text {
+    color: $color-primary;
+  }
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.saveBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background-color: $color-success;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  Text {
+    color: $color-text-white;
+  }
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
 }
 
 .closeBtn {
