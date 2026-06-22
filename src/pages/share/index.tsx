@@ -1,120 +1,88 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, Image } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
-import { Customer, PROJECT_TYPE_MAP } from '@/types';
-import { formatDate, formatTime } from '@/utils';
+import { PROJECT_TYPE_MAP } from '@/types';
+import { formatDate, formatTime, decodeSharePayload } from '@/utils';
 
-const STORAGE_KEY = 'clinic_photo_archive_data_v1';
-const SHARE_TOKEN_KEY = 'clinic_share_tokens_v1';
+interface DecodedPhoto {
+  pos: string;
+  url: string;
+  cat: string;
+  at: string;
+}
+
+interface DecodedData {
+  cid: string;
+  n: string;
+  pt: string;
+  pn: string;
+  tn: string;
+  ca: string;
+  auth: boolean;
+  expireAt: string;
+  photos: DecodedPhoto[];
+}
 
 const SharePage: React.FC = () => {
   const router = useRouter();
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [decodedData, setDecodedData] = useState<DecodedData | null>(null);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [tokenValid, setTokenValid] = useState(false);
 
   const projectConfig = useMemo(() => {
-    if (!customer) return null;
-    return PROJECT_TYPE_MAP[customer.projectType];
-  }, [customer]);
+    if (!decodedData) return null;
+    return PROJECT_TYPE_MAP[decodedData.pt as keyof typeof PROJECT_TYPE_MAP];
+  }, [decodedData]);
 
-  const archivedPhotos = useMemo(() => {
-    if (!customer) return [];
-    return customer.photos.filter(p => p.status === 'completed');
-  }, [customer]);
-
-  const validateShareToken = useCallback((customerId: string, token: string): { valid: boolean; reason?: string } => {
-    if (!customerId || !token) {
-      return { valid: false, reason: '链接参数不完整' };
-    }
-
-    try {
-      const tokens = Taro.getStorageSync(SHARE_TOKEN_KEY) || {};
-      const tokenRecord = tokens[customerId];
-
-      if (!tokenRecord) {
-        return { valid: false, reason: '该分享链接不存在或已被撤销' };
-      }
-
-      if (tokenRecord.token !== token) {
-        return { valid: false, reason: '分享令牌无效' };
-      }
-
-      const expireTime = new Date(tokenRecord.expireAt);
-      if (new Date() > expireTime) {
-        return { valid: false, reason: '分享链接已过期，请联系门店获取新链接' };
-      }
-
-      return { valid: true };
-    } catch (e) {
-      console.error('[SharePage] Token校验异常:', e);
-      return { valid: false, reason: '校验失败，请稍后重试' };
-    }
-  }, []);
-
-  const loadCustomer = useCallback((customerId: string): Customer | null => {
-    try {
-      const customers: Customer[] = Taro.getStorageSync(STORAGE_KEY) || [];
-      const found = customers.find(c => c.id === customerId);
-      if (!found) {
-        setError('未找到对应客户的对比数据');
-        return null;
-      }
-
-      if (!found.hasPortraitAuth) {
-        setError('该客户未签署肖像授权，无法查看');
-        return null;
-      }
-
-      if (found.status !== 'completed') {
-        setError('该客户照片尚未完成归档');
-        return null;
-      }
-
-      return found;
-    } catch (e) {
-      console.error('[SharePage] 加载客户数据失败:', e);
-      setError('加载数据失败，请稍后重试');
-      return null;
-    }
+  const isLocalPhoto = useCallback((url: string): boolean => {
+    return url.startsWith('wxfile://') || url.startsWith('http://tmp/') || url.startsWith('/tmp/');
   }, []);
 
   useEffect(() => {
-    const customerId = router.params.customerId;
-    const token = router.params.token;
+    const payload = router.params.payload;
 
-    console.log('[SharePage] URL参数:', { customerId, token, hasToken: !!token });
-
-    if (!customerId || !token) {
-      setError('链接无效，请扫描正确的二维码');
+    if (!payload) {
+      setError('链接无效');
       setLoading(false);
       return;
     }
 
-    const validation = validateShareToken(customerId, token);
-    if (!validation.valid) {
-      setError(validation.reason || '链接无效或已过期');
+    const data = decodeSharePayload(payload);
+
+    if (!data) {
+      setError('链接无效或已过期');
       setLoading(false);
       return;
     }
 
-    setTokenValid(true);
-
-    setTimeout(() => {
-      const found = loadCustomer(customerId);
-      if (found) {
-        setCustomer(found);
-      }
+    if (!data.auth) {
+      setError('该客户未签署肖像授权，无法查看');
       setLoading(false);
-    }, 300);
-  }, [router.params, validateShareToken, loadCustomer]);
+      return;
+    }
+
+    if (!data.photos || data.photos.length === 0) {
+      setError('该客户暂无已归档的照片');
+      setLoading(false);
+      return;
+    }
+
+    setDecodedData(data);
+    setLoading(false);
+  }, [router.params]);
 
   const handleViewPhoto = useCallback((photoUrl: string) => {
-    const urls = archivedPhotos.map(p => p.url);
-    Taro.previewImage({ urls, current: photoUrl });
-  }, [archivedPhotos]);
+    if (isLocalPhoto(photoUrl)) return;
+    const urls = decodedData?.photos
+      .filter(p => !isLocalPhoto(p.url))
+      .map(p => p.url) || [];
+    if (urls.length > 0) {
+      import('@tarojs/taro').then(Taro => {
+        Taro.previewImage({ urls, current: photoUrl });
+      });
+    }
+  }, [decodedData, isLocalPhoto]);
 
   if (loading) {
     return (
@@ -125,7 +93,7 @@ const SharePage: React.FC = () => {
     );
   }
 
-  if (error || !customer || !projectConfig) {
+  if (error || !decodedData || !projectConfig) {
     return (
       <View className={styles.errorState}>
         <Text className={styles.errorIcon}>🔒</Text>
@@ -150,19 +118,19 @@ const SharePage: React.FC = () => {
       <View className={styles.content}>
         <View className={styles.customerCard}>
           <View className={styles.customerAvatar}>
-            <Text className={styles.customerAvatarText}>{customer.name.charAt(0)}</Text>
+            <Text className={styles.customerAvatarText}>{decodedData.n.charAt(0)}</Text>
           </View>
           <View className={styles.customerInfo}>
-            <Text className={styles.customerName}>{customer.name}</Text>
+            <Text className={styles.customerName}>{decodedData.n}</Text>
             <Text className={styles.customerProject}>
-              {projectConfig.name} · {customer.projectName}
+              {projectConfig.name} · {decodedData.pn}
             </Text>
             <Text className={styles.customerNode}>
-              疗程节点：{customer.treatmentNode}
+              疗程节点：{decodedData.tn}
             </Text>
-            {customer.completedAt && (
+            {decodedData.ca && (
               <Text className={styles.customerNode}>
-                归档时间：{formatDate(customer.completedAt)} {formatTime(customer.completedAt)}
+                归档时间：{formatDate(decodedData.ca)} {formatTime(decodedData.ca)}
               </Text>
             )}
           </View>
@@ -171,30 +139,37 @@ const SharePage: React.FC = () => {
         <View className={styles.sectionCard}>
           <Text className={styles.sectionTitle}>
             <Text className={styles.sectionIcon}>📸</Text>
-            已归档对比照片 ({archivedPhotos.length})
+            已归档对比照片 ({decodedData.photos.length})
           </Text>
-          {archivedPhotos.length > 0 ? (
+          {decodedData.photos.length > 0 ? (
             <View className={styles.photoGrid}>
-              {archivedPhotos.map(photo => (
+              {decodedData.photos.map((photo, idx) => (
                 <View
-                  key={photo.id}
+                  key={`${photo.pos}_${idx}`}
                   className={styles.photoItem}
                   onClick={() => handleViewPhoto(photo.url)}
                 >
-                  <Image
-                    className={styles.photoImage}
-                    src={photo.url}
-                    mode="aspectFill"
-                  />
-                  {photo.capturedAt && (
+                  {isLocalPhoto(photo.url) ? (
+                    <View className={styles.photoImage}>
+                      <Text style={{ fontSize: '24px', color: '#999' }}>📷</Text>
+                      <Text style={{ fontSize: '10px', color: '#999', marginTop: '4px' }}>跨设备无法加载本地照片</Text>
+                    </View>
+                  ) : (
+                    <Image
+                      className={styles.photoImage}
+                      src={photo.url}
+                      mode="aspectFill"
+                    />
+                  )}
+                  {photo.cat && (
                     <View className={styles.photoTime}>
                       <Text>
-                        {formatDate(photo.capturedAt)}
+                        {formatDate(photo.cat)}
                       </Text>
                     </View>
                   )}
                   <View className={styles.photoLabel}>
-                    <Text className={styles.photoLabelText}>{photo.position}</Text>
+                    <Text className={styles.photoLabelText}>{photo.pos}</Text>
                   </View>
                 </View>
               ))}
@@ -212,7 +187,7 @@ const SharePage: React.FC = () => {
             本页面内容仅用于您本人查看，请勿转发分享
           </Text>
           <Text className={styles.watermark}>
-            {customer.name} · {new Date().toLocaleDateString('zh-CN')} · 私密档案
+            {decodedData.n} · {new Date().toLocaleDateString('zh-CN')} · 私密档案
           </Text>
         </View>
       </View>

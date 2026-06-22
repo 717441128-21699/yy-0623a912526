@@ -1,6 +1,97 @@
 import Taro from '@tarojs/taro';
+import { Customer } from '@/types';
 
-const SHARE_TOKEN_KEY = 'clinic_share_tokens_v1';
+interface SharePayload {
+  cid: string;
+  n: string;
+  pt: string;
+  pn: string;
+  tn: string;
+  ca: string;
+  auth: boolean;
+  exp: number;
+  sig: string;
+  photos: { pos: string; url: string; cat: string; at: string }[];
+}
+
+const simpleHash = (data: string): string => {
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    const char = data.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+};
+
+export const encodeSharePayload = (customer: Customer): string => {
+  const exp = Date.now() + 7 * 24 * 60 * 60 * 1000;
+  const completedPhotos = customer.photos
+    .filter(p => p.status === 'completed')
+    .map(p => ({
+      pos: p.position,
+      url: p.url,
+      cat: p.capturedAt || '',
+      at: p.archivedAt || ''
+    }));
+  const raw = {
+    cid: customer.id,
+    n: customer.name,
+    pt: customer.projectType,
+    pn: customer.projectName,
+    tn: customer.treatmentNode,
+    ca: customer.completedAt || '',
+    auth: customer.hasPortraitAuth,
+    exp,
+    photos: completedPhotos
+  };
+  const rawStr = JSON.stringify(raw);
+  const sig = simpleHash(rawStr);
+  const payload: SharePayload = { ...raw, sig };
+  const jsonStr = JSON.stringify(payload);
+  return btoa(encodeURIComponent(jsonStr));
+};
+
+export const decodeSharePayload = (encoded: string): (Omit<SharePayload, 'sig' | 'exp'> & { expireAt: string }) | null => {
+  try {
+    const jsonStr = decodeURIComponent(atob(encoded));
+    const payload: SharePayload = JSON.parse(jsonStr);
+    if (!payload.exp || Date.now() > payload.exp) return null;
+    const { sig, ...raw } = payload;
+    const rawStr = JSON.stringify(raw);
+    if (simpleHash(rawStr) !== sig) return null;
+    if (!raw.auth) return null;
+    if (!raw.photos || raw.photos.length === 0) return null;
+    return {
+      cid: raw.cid,
+      n: raw.n,
+      pt: raw.pt,
+      pn: raw.pn,
+      tn: raw.tn,
+      ca: raw.ca,
+      auth: raw.auth,
+      expireAt: new Date(raw.exp).toISOString(),
+      photos: raw.photos
+    };
+  } catch {
+    return null;
+  }
+};
+
+export const generateShareQrCode = (customer: Customer): {
+  qrImageUrl: string;
+  shareUrl: string;
+  payload: string;
+  expireAt: string;
+} => {
+  const payload = encodeSharePayload(customer);
+  const shareUrl = `weixin://dl/business/?appid=cli_share&path=pages/share/index&query=payload%3D${payload}`;
+  const encodedShareUrl = encodeURIComponent(shareUrl);
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedShareUrl}&margin=10&color=4A90E2`;
+  const decoded = decodeSharePayload(payload);
+  const expireAt = decoded?.expireAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  return { qrImageUrl, shareUrl, payload, expireAt };
+};
 
 export const formatTime = (date: Date | string): string => {
   const d = new Date(date);
@@ -51,34 +142,6 @@ export const calculatePhotoProgress = (photos: { status: string }[]): { complete
   const completed = photos.filter(p => p.status === 'confirmed' || p.status === 'completed').length;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
   return { completed, total, percent };
-};
-
-export const generateShareToken = (customerId: string): { token: string; expireAt: string; shareUrl: string } => {
-  const token = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-  const expireAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
-  try {
-    const tokens = Taro.getStorageSync(SHARE_TOKEN_KEY) || {};
-    tokens[customerId] = { token, expireAt, createdAt: new Date().toISOString() };
-    Taro.setStorageSync(SHARE_TOKEN_KEY, tokens);
-    console.log('[Utils] 生成分享Token:', { customerId, expireAt });
-  } catch (e) {
-    console.warn('[Utils] 保存分享Token失败:', e);
-  }
-
-  const shareUrl = `/pages/share/index?customerId=${encodeURIComponent(customerId)}&token=${encodeURIComponent(token)}`;
-  return { token, expireAt, shareUrl };
-};
-
-export const getQrCodeUrl = (customerId: string): { qrImageUrl: string; shareUrl: string; token: string; expireAt: string } => {
-  const { token, expireAt, shareUrl } = generateShareToken(customerId);
-
-  const encodedPath = encodeURIComponent(shareUrl);
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedPath}&margin=10&color=4A90E2`;
-
-  console.log('[Utils] 生成二维码:', { customerId, shareUrl, qrImageUrl });
-
-  return { qrImageUrl, shareUrl, token, expireAt };
 };
 
 export const debounce = <T extends (...args: any[]) => any>(

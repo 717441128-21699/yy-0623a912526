@@ -156,3 +156,168 @@
   font-size: $font-size-sm;
   color: $color-text-tertiary;
 }
+
+.detailModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  @include flex-center;
+}
+
+.detailContent {
+  width: 640rpx;
+  max-height: 80vh;
+  background-color: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  position: relative;
+  overflow-y: auto;
+}
+
+.detailClose {
+  position: absolute;
+  top: $spacing-md;
+  right: $spacing-md;
+  width: 56rpx;
+  height: 56rpx;
+  @include flex-center;
+  font-size: $font-size-lg;
+  color: $color-text-tertiary;
+  border-radius: $radius-round;
+  background-color: $color-bg-hover;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+  padding-right: 60rpx;
+}
+
+.detailAvatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: $radius-round;
+  background-color: $color-primary;
+  @include flex-center;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+
+  Text {
+    font-size: $font-size-xl;
+    color: $color-text-white;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.detailName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.detailProject {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+}
+
+.photoItem {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.photoThumbnail {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: $radius-sm;
+}
+
+.photoStatusBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 0 $radius-sm 0 $radius-sm;
+  padding: 2rpx 6rpx;
+
+  Text {
+    font-size: 18rpx;
+    color: $color-text-white;
+  }
+}
+
+.photoEmpty {
+  width: 100%;
+  height: 100%;
+  background-color: $color-bg-hover;
+  @include flex-center;
+  border-radius: $radius-sm;
+  border: 2rpx dashed $color-border;
+
+  Text {
+    font-size: $font-size-xs;
+    color: $color-text-disabled;
+  }
+}
+
+.detailProgress {
+  text-align: center;
+  margin-bottom: $spacing-lg;
+
+  Text {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+  }
+}
+
+.detailActions {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.detailBtn {
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  @include flex-center;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.detailBtnPrimary {
+  background-color: $color-primary;
+
+  Text {
+    color: $color-text-white;
+  }
+}
+
+.detailBtnDefault {
+  background-color: $color-bg-hover;
+  border: 2rpx solid $color-border;
+
+  Text {
+    color: $color-text-secondary;
+  }
+}

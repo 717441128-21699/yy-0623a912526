@@ -1,11 +1,11 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, Input, ScrollView } from '@tarojs/components';
+import { View, Text, Input, ScrollView, Image } from '@tarojs/components';
 import Taro, { usePullDownRefresh } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import { useCustomer } from '@/store/CustomerContext';
 import CustomerCard from '@/components/CustomerCard';
-import { CustomerStatus } from '@/types';
+import { CustomerStatus, Customer, PHOTO_STATUS_MAP } from '@/types';
 import { getTodayDate, getWeekDay } from '@/data/mockData';
 import { debounce, showToast } from '@/utils';
 
@@ -16,6 +16,8 @@ const TodayPage: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [detailCustomer, setDetailCustomer] = useState<Customer | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const stats = useMemo(() => {
     return {
@@ -51,7 +53,8 @@ const TodayPage: React.FC = () => {
 
   const handleViewDetail = useCallback((customer) => {
     setCurrentCustomer(customer);
-    showToast(`查看 ${customer.name} 的详情`);
+    setDetailCustomer(customer);
+    setShowDetailModal(true);
     console.log('[TodayPage] 查看详情', customer.name);
   }, [setCurrentCustomer]);
 
@@ -153,6 +156,75 @@ const TodayPage: React.FC = () => {
           </View>
         )}
       </View>
+
+      {showDetailModal && detailCustomer && (
+        <View className={styles.detailModal}>
+          <View className={styles.detailContent}>
+            <View className={styles.detailClose} onClick={() => setShowDetailModal(false)}>
+              <Text>✕</Text>
+            </View>
+
+            <View className={styles.detailHeader}>
+              <View className={styles.detailAvatar}>
+                <Text>{detailCustomer.name.charAt(0)}</Text>
+              </View>
+              <View>
+                <Text className={styles.detailName}>{detailCustomer.name}</Text>
+                <Text className={styles.detailProject}>{detailCustomer.projectName}</Text>
+              </View>
+            </View>
+
+            <View className={styles.photoGrid}>
+              {detailCustomer.photos.map(photo => (
+                <View key={photo.id} className={styles.photoItem}>
+                  {photo.status !== 'pending' ? (
+                    <>
+                      <Image
+                        className={styles.photoThumbnail}
+                        src={photo.url}
+                        mode="aspectFill"
+                      />
+                      <View className={styles.photoStatusBadge}>
+                        <Text>{PHOTO_STATUS_MAP[photo.status].text}</Text>
+                      </View>
+                    </>
+                  ) : (
+                    <View className={styles.photoEmpty}>
+                      <Text>待拍摄</Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+
+            <View className={styles.detailProgress}>
+              <Text>
+                已拍 {detailCustomer.photos.filter(p => p.status !== 'pending').length} / 总共 {detailCustomer.photos.length} 张
+              </Text>
+            </View>
+
+            <View className={styles.detailActions}>
+              {detailCustomer.status !== 'completed' && (
+                <View
+                  className={classnames(styles.detailBtn, styles.detailBtnPrimary)}
+                  onClick={() => {
+                    handleStartCapture(detailCustomer);
+                    setShowDetailModal(false);
+                  }}
+                >
+                  <Text>开始拍摄</Text>
+                </View>
+              )}
+              <View
+                className={classnames(styles.detailBtn, styles.detailBtnDefault)}
+                onClick={() => setShowDetailModal(false)}
+              >
+                <Text>关闭</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 };

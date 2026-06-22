@@ -5,7 +5,7 @@ import classnames from 'classnames';
 import styles from './index.module.scss';
 import { useCustomer } from '@/store/CustomerContext';
 import { PROJECT_TYPE_MAP } from '@/types';
-import { getQrCodeUrl, showToast, showModal, formatDate } from '@/utils';
+import { generateShareQrCode, showToast, showModal, formatDate } from '@/utils';
 
 const ComparePage: React.FC = () => {
   const { customers, setCurrentCustomer, currentCustomer } = useCustomer();
@@ -15,7 +15,7 @@ const ComparePage: React.FC = () => {
   const [qrData, setQrData] = useState<{
     qrImageUrl: string;
     shareUrl: string;
-    token: string;
+    payload: string;
     expireAt: string;
   } | null>(null);
 
@@ -76,7 +76,7 @@ const ComparePage: React.FC = () => {
     }
 
     try {
-      const data = getQrCodeUrl(selectedCustomer.id);
+      const data = generateShareQrCode(selectedCustomer);
       setQrData(data);
       setShowQrModal(true);
       console.log('[ComparePage] 生成对比二维码', selectedCustomer.name, data);
@@ -100,7 +100,7 @@ const ComparePage: React.FC = () => {
 
   const handleOpenSharePage = useCallback(() => {
     if (!qrData) return;
-    const url = `/pages/share/index?customerId=${encodeURIComponent(selectedCustomer?.id || '')}&token=${encodeURIComponent(qrData.token)}`;
+    const url = `/pages/share/index?payload=${encodeURIComponent(qrData.payload)}`;
     Taro.navigateTo({ url });
   }, [qrData, selectedCustomer]);
 

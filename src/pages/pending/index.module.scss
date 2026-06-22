@@ -357,3 +357,172 @@
   font-size: $font-size-sm;
   color: $color-text-tertiary;
 }
+
+.photoSection {
+  margin-bottom: $spacing-md;
+}
+
+.photoSectionTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.photoScroll {
+  white-space: nowrap;
+  width: 100%;
+}
+
+.photoScrollItem {
+  display: inline-block;
+  margin-right: $spacing-sm;
+  vertical-align: top;
+  white-space: normal;
+}
+
+.photoThumb {
+  width: 120rpx;
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.photoThumbImage {
+  width: 120rpx;
+  height: 120rpx;
+  display: block;
+}
+
+.photoThumbLabel {
+  font-size: $font-size-xs - 2rpx;
+  color: $color-text-tertiary;
+  text-align: center;
+  display: block;
+  padding: 4rpx 0;
+  @include text-ellipsis;
+}
+
+.photoEmptySlot {
+  width: 120rpx;
+  height: 120rpx;
+  border: 2rpx dashed $color-text-disabled;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photoEmptySlotText {
+  font-size: $font-size-xs;
+  color: $color-text-disabled;
+}
+
+.previewModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: $page-padding;
+}
+
+.previewContent {
+  background-color: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  width: 100%;
+  max-width: 650rpx;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.previewTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+  display: block;
+}
+
+.previewSubtitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-lg;
+  display: block;
+}
+
+.previewPhotoGrid {
+  flex: 1;
+  overflow: hidden;
+}
+
+.previewPhotoItem {
+  display: inline-block;
+  width: calc(50% - #{$spacing-sm} / 2);
+  margin-bottom: $spacing-md;
+  vertical-align: top;
+
+  &:nth-child(odd) {
+    margin-right: $spacing-sm;
+  }
+}
+
+.previewPhotoImage {
+  width: 100%;
+  height: 200rpx;
+  border-radius: $radius-sm;
+  display: block;
+}
+
+.previewPhotoInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-xs 0;
+}
+
+.previewPhotoPosition {
+  font-size: $font-size-xs;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.previewPhotoStatus {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.previewPendingSlot {
+  width: 100%;
+  height: 200rpx;
+  border: 2rpx dashed $color-text-disabled;
+  border-radius: $radius-sm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.previewPendingText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-xs;
+}
+
+.previewPendingLabel {
+  font-size: $font-size-xs;
+  color: $color-text-disabled;
+}
+
+.previewActions {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+}

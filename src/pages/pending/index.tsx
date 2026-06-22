@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, Button, Input } from '@tarojs/components';
+import { View, Text, Button, Input, Image, ScrollView } from '@tarojs/components';
 import Taro, { usePullDownRefresh } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import { useCustomer } from '@/store/CustomerContext';
-import { PROJECT_TYPE_MAP, Customer } from '@/types';
+import { PROJECT_TYPE_MAP, PHOTO_STATUS_MAP, Customer } from '@/types';
 import { showToast, showModal, maskPhone } from '@/utils';
 
 interface MissingItem {
@@ -19,6 +19,8 @@ const PendingPage: React.FC = () => {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [editNickname, setEditNickname] = useState('');
   const [editConsultant, setEditConsultant] = useState('');
+  const [previewCustomer, setPreviewCustomer] = useState<Customer | null>(null);
+  const [showPhotoPreview, setShowPhotoPreview] = useState(false);
 
   const pendingCustomers = useMemo(() => {
     return customers.filter(customer => {
@@ -126,9 +128,27 @@ const PendingPage: React.FC = () => {
   const handleGoCapture = useCallback((customer: Customer) => {
     setCurrentCustomer(customer);
     updateCustomerStatus(customer.id, 'photographing');
+    setShowPhotoPreview(false);
+    setPreviewCustomer(null);
     Taro.switchTab({ url: '/pages/capture/index' });
     console.log('[PendingPage] 跳转补拍', customer.name);
   }, [setCurrentCustomer, updateCustomerStatus]);
+
+  const handlePreviewPhoto = useCallback((customer: Customer) => {
+    setPreviewCustomer(customer);
+    setShowPhotoPreview(true);
+  }, []);
+
+  const handleClosePreview = useCallback(() => {
+    setShowPhotoPreview(false);
+    setPreviewCustomer(null);
+  }, []);
+
+  const handlePreviewGoCapture = useCallback(() => {
+    if (previewCustomer) {
+      handleGoCapture(previewCustomer);
+    }
+  }, [previewCustomer, handleGoCapture]);
 
   const handleSignAuth = useCallback(async (customer: Customer) => {
     const confirmed = await showModal(
@@ -179,6 +199,8 @@ const PendingPage: React.FC = () => {
               const needsPhotos = missingItems.some(m => m.type === 'photos');
               const needsInfo = missingItems.some(m => m.type === 'nickname' || m.type === 'consultant');
               const needsAuth = missingItems.some(m => m.type === 'portraitAuth');
+              const capturedPhotos = customer.photos.filter(p => p.status !== 'pending');
+              const pendingPhotos = customer.photos.filter(p => p.status === 'pending');
 
               return (
                 <View key={customer.id} className={styles.customerCard}>
@@ -213,6 +235,33 @@ const PendingPage: React.FC = () => {
                     </View>
                   </View>
 
+                  {capturedPhotos.length > 0 && (
+                    <View className={styles.photoSection}>
+                      <Text className={styles.photoSectionTitle}>
+                        已拍照片 ({capturedPhotos.length}/{customer.photos.length})
+                      </Text>
+                      <ScrollView scrollX className={styles.photoScroll}>
+                        {capturedPhotos.map(photo => (
+                          <View key={photo.id} className={styles.photoScrollItem} onClick={() => handlePreviewPhoto(customer)}>
+                            <View className={styles.photoThumb}>
+                              <Image className={styles.photoThumbImage} src={photo.url} mode="aspectFill" />
+                              <Text className={styles.photoThumbLabel}>
+                                {photo.position} · {PHOTO_STATUS_MAP[photo.status].text}
+                              </Text>
+                            </View>
+                          </View>
+                        ))}
+                        {pendingPhotos.length > 0 && (
+                          <View className={styles.photoScrollItem}>
+                            <View className={styles.photoEmptySlot} onClick={() => handlePreviewPhoto(customer)}>
+                              <Text className={styles.photoEmptySlotText}>待补拍</Text>
+                            </View>
+                          </View>
+                        )}
+                      </ScrollView>
+                    </View>
+                  )}
+
                   {needsAuth && (
                     <View className={styles.warningBanner}>
                       <Text className={styles.warningIcon}>⚠️</Text>
@@ -236,7 +285,7 @@ const PendingPage: React.FC = () => {
                     {needsPhotos && (
                       <Button
                         className={classnames(styles.actionBtn, styles.warningBtn)}
-                        onClick={() => handleGoCapture(customer)}
+                        onClick={() => handlePreviewPhoto(customer)}
                       >
                         <Text>去补拍</Text>
                       </Button>
@@ -310,6 +359,58 @@ const PendingPage: React.FC = () => {
                 onClick={handleSaveEdit}
               >
                 <Text>保存</Text>
+              </Button>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {showPhotoPreview && previewCustomer && (
+        <View className={styles.previewModal} onClick={handleClosePreview}>
+          <View className={styles.previewContent} onClick={(e) => e.stopPropagation()}>
+            <Text className={styles.previewTitle}>{previewCustomer.name}</Text>
+            <Text className={styles.previewSubtitle}>
+              {PROJECT_TYPE_MAP[previewCustomer.projectType].name} · {previewCustomer.projectName}
+            </Text>
+
+            <ScrollView scrollY className={styles.previewPhotoGrid}>
+              {previewCustomer.photos.map(photo => (
+                <View key={photo.id} className={styles.previewPhotoItem}>
+                  {photo.status !== 'pending' ? (
+                    <>
+                      <Image className={styles.previewPhotoImage} src={photo.url} mode="aspectFill" />
+                      <View className={styles.previewPhotoInfo}>
+                        <Text className={styles.previewPhotoPosition}>{photo.position}</Text>
+                        <Text
+                          className={styles.previewPhotoStatus}
+                          style={{ color: PHOTO_STATUS_MAP[photo.status].color }}
+                        >
+                          {PHOTO_STATUS_MAP[photo.status].text}
+                        </Text>
+                      </View>
+                    </>
+                  ) : (
+                    <View className={styles.previewPendingSlot}>
+                      <Text className={styles.previewPendingText}>{photo.position}</Text>
+                      <Text className={styles.previewPendingLabel}>待拍摄</Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </ScrollView>
+
+            <View className={styles.previewActions}>
+              <Button
+                className={classnames(styles.modalBtn, styles.warningBtn)}
+                onClick={handlePreviewGoCapture}
+              >
+                <Text>去补拍</Text>
+              </Button>
+              <Button
+                className={classnames(styles.modalBtn, styles.cancelBtn)}
+                onClick={handleClosePreview}
+              >
+                <Text>关闭</Text>
               </Button>
             </View>
           </View>
