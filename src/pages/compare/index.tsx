@@ -100,9 +100,8 @@ const ComparePage: React.FC = () => {
 
   const handleOpenSharePage = useCallback(() => {
     if (!qrData) return;
-    const url = `/pages/share/index?payload=${encodeURIComponent(qrData.payload)}`;
-    Taro.navigateTo({ url });
-  }, [qrData, selectedCustomer]);
+    Taro.navigateTo({ url: qrData.shareUrl });
+  }, [qrData]);
 
   const expireDateText = useMemo(() => {
     if (!qrData?.expireAt) return '';
@@ -284,12 +283,12 @@ const ComparePage: React.FC = () => {
               </View>
             </View>
             <View className={styles.qrLink}>
-              <Text className={styles.qrLinkLabel}>分享路径：</Text>
-              <Text className={styles.qrLinkText}>{qrData.shareUrl}</Text>
+              <Text className={styles.qrLinkLabel}>扫码入口页面：</Text>
+              <Text className={styles.qrLinkText}>pages/share/index (含客户数据)</Text>
             </View>
             <View className={styles.qrActions}>
               <Button className={styles.previewBtn} onClick={handleOpenSharePage}>
-                <Text>📱 预览分享页</Text>
+                <Text>📱 预览客户扫码看到的内容</Text>
               </Button>
               <Button className={styles.saveBtn} onClick={handleSaveQr}>
                 <Text>💾 保存二维码</Text>

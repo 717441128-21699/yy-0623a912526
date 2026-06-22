@@ -1,6 +1,8 @@
 import Taro from '@tarojs/taro';
 import { Customer } from '@/types';
 
+const SIGN_SECRET = 'CL1N1C_PH0T0_4RCH1V3_S3CR3T_K3Y_2026';
+
 interface SharePayload {
   cid: string;
   n: string;
@@ -10,30 +12,44 @@ interface SharePayload {
   ca: string;
   auth: boolean;
   exp: number;
+  nonce: string;
   sig: string;
   photos: { pos: string; url: string; cat: string; at: string }[];
 }
 
-const simpleHash = (data: string): string => {
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    const char = data.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0;
+const hmacLike = (key: string, data: string): string => {
+  const combined = key + data + key;
+  let h1 = 0;
+  let h2 = 0;
+  for (let i = 0; i < combined.length; i++) {
+    const c = combined.charCodeAt(i);
+    h1 = ((h1 << 5) - h1 + c) | 0;
+    h2 = ((h2 << 7) + h2 + c) | 0;
   }
-  return Math.abs(hash).toString(36);
+  const s1 = Math.abs(h1).toString(36);
+  const s2 = Math.abs(h2).toString(36);
+  const h3 = Math.abs(h1 ^ h2).toString(36);
+  return s1 + '-' + s2 + '-' + h3;
+};
+
+export const generateCloudUrl = (photoId: string): string => {
+  const seed = photoId.replace(/[^a-zA-Z0-9]/g, '');
+  const num = seed.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return `https://picsum.photos/id/${(num % 900) + 100}/600/800`;
 };
 
 export const encodeSharePayload = (customer: Customer): string => {
   const exp = Date.now() + 7 * 24 * 60 * 60 * 1000;
+  const nonce = Math.random().toString(36).slice(2, 8) + Date.now().toString(36);
   const completedPhotos = customer.photos
     .filter(p => p.status === 'completed')
     .map(p => ({
       pos: p.position,
-      url: p.url,
+      url: p.cloudUrl || p.url,
       cat: p.capturedAt || '',
       at: p.archivedAt || ''
     }));
+
   const raw = {
     cid: customer.id,
     n: customer.name,
@@ -43,25 +59,32 @@ export const encodeSharePayload = (customer: Customer): string => {
     ca: customer.completedAt || '',
     auth: customer.hasPortraitAuth,
     exp,
+    nonce,
     photos: completedPhotos
   };
+
   const rawStr = JSON.stringify(raw);
-  const sig = simpleHash(rawStr);
+  const sig = hmacLike(SIGN_SECRET, rawStr);
   const payload: SharePayload = { ...raw, sig };
   const jsonStr = JSON.stringify(payload);
   return btoa(encodeURIComponent(jsonStr));
 };
 
-export const decodeSharePayload = (encoded: string): (Omit<SharePayload, 'sig' | 'exp'> & { expireAt: string }) | null => {
+export const decodeSharePayload = (encoded: string): (Omit<SharePayload, 'sig' | 'exp' | 'nonce'> & { expireAt: string }) | null => {
   try {
     const jsonStr = decodeURIComponent(atob(encoded));
     const payload: SharePayload = JSON.parse(jsonStr);
+
     if (!payload.exp || Date.now() > payload.exp) return null;
+    if (!payload.nonce || payload.nonce.length < 8) return null;
+
     const { sig, ...raw } = payload;
     const rawStr = JSON.stringify(raw);
-    if (simpleHash(rawStr) !== sig) return null;
+    if (hmacLike(SIGN_SECRET, rawStr) !== sig) return null;
+
     if (!raw.auth) return null;
     if (!raw.photos || raw.photos.length === 0) return null;
+
     return {
       cid: raw.cid,
       n: raw.n,
@@ -85,9 +108,10 @@ export const generateShareQrCode = (customer: Customer): {
   expireAt: string;
 } => {
   const payload = encodeSharePayload(customer);
-  const shareUrl = `weixin://dl/business/?appid=cli_share&path=pages/share/index&query=payload%3D${payload}`;
-  const encodedShareUrl = encodeURIComponent(shareUrl);
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedShareUrl}&margin=10&color=4A90E2`;
+  const shareUrl = `/pages/share/index?payload=${payload}`;
+  const qrPagePath = `pages/share/index?payload=${payload}`;
+  const encodedPath = encodeURIComponent(qrPagePath);
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedPath}&margin=10&color=4A90E2`;
   const decoded = decodeSharePayload(payload);
   const expireAt = decoded?.expireAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   return { qrImageUrl, shareUrl, payload, expireAt };

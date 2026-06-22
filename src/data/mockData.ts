@@ -44,6 +44,7 @@ const generatePhotos = (projectType: ProjectType, count: number = 5, allComplete
       id: `photo_${Date.now()}_${index}`,
       position,
       url: `https://picsum.photos/id/${100 + index * 10}/600/800`,
+      cloudUrl: `https://picsum.photos/id/${100 + index * 10}/600/800`,
       status,
       capturedAt,
       confirmedAt: status === 'confirmed' || status === 'completed' ? confirmedAt : undefined,

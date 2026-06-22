@@ -16,6 +16,7 @@ export interface PhotoItem {
   id: string;
   position: string;
   url: string;
+  cloudUrl?: string;
   status: PhotoStatus;
   capturedAt?: string;
   confirmedAt?: string;

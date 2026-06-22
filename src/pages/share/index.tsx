@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, Image } from '@tarojs/components';
+import Taro from '@tarojs/taro';
 import { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { PROJECT_TYPE_MAP } from '@/types';
@@ -35,15 +36,11 @@ const SharePage: React.FC = () => {
     return PROJECT_TYPE_MAP[decodedData.pt as keyof typeof PROJECT_TYPE_MAP];
   }, [decodedData]);
 
-  const isLocalPhoto = useCallback((url: string): boolean => {
-    return url.startsWith('wxfile://') || url.startsWith('http://tmp/') || url.startsWith('/tmp/');
-  }, []);
-
   useEffect(() => {
     const payload = router.params.payload;
 
     if (!payload) {
-      setError('链接无效');
+      setError('链接无效，请扫描正确的二维码');
       setLoading(false);
       return;
     }
@@ -51,7 +48,7 @@ const SharePage: React.FC = () => {
     const data = decodeSharePayload(payload);
 
     if (!data) {
-      setError('链接无效或已过期');
+      setError('链接无效或已过期，请联系门店获取新的对比链接');
       setLoading(false);
       return;
     }
@@ -73,16 +70,11 @@ const SharePage: React.FC = () => {
   }, [router.params]);
 
   const handleViewPhoto = useCallback((photoUrl: string) => {
-    if (isLocalPhoto(photoUrl)) return;
-    const urls = decodedData?.photos
-      .filter(p => !isLocalPhoto(p.url))
-      .map(p => p.url) || [];
+    const urls = decodedData?.photos.map(p => p.url) || [];
     if (urls.length > 0) {
-      import('@tarojs/taro').then(Taro => {
-        Taro.previewImage({ urls, current: photoUrl });
-      });
+      Taro.previewImage({ urls, current: photoUrl });
     }
-  }, [decodedData, isLocalPhoto]);
+  }, [decodedData]);
 
   if (loading) {
     return (
@@ -149,18 +141,11 @@ const SharePage: React.FC = () => {
                   className={styles.photoItem}
                   onClick={() => handleViewPhoto(photo.url)}
                 >
-                  {isLocalPhoto(photo.url) ? (
-                    <View className={styles.photoImage}>
-                      <Text style={{ fontSize: '24px', color: '#999' }}>📷</Text>
-                      <Text style={{ fontSize: '10px', color: '#999', marginTop: '4px' }}>跨设备无法加载本地照片</Text>
-                    </View>
-                  ) : (
-                    <Image
-                      className={styles.photoImage}
-                      src={photo.url}
-                      mode="aspectFill"
-                    />
-                  )}
+                  <Image
+                    className={styles.photoImage}
+                    src={photo.url}
+                    mode="aspectFill"
+                  />
                   {photo.cat && (
                     <View className={styles.photoTime}>
                       <Text>

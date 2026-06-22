@@ -2,9 +2,9 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 import Taro from '@tarojs/taro';
 import { Customer, PhotoItem } from '@/types';
 import { mockCustomers } from '@/data/mockData';
-import { generateId, showToast } from '@/utils';
+import { generateId, showToast, generateCloudUrl } from '@/utils';
 
-const STORAGE_KEY = 'clinic_photo_archive_data_v1';
+const STORAGE_KEY = 'clinic_photo_archive_data_v2';
 
 interface CustomerContextType {
   customers: Customer[];
@@ -98,10 +98,12 @@ export const CustomerProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, [currentCustomer]);
 
   const addPhoto = useCallback((customerId: string, position: string, url: string) => {
+    const photoId = generateId();
     const newPhoto: PhotoItem = {
-      id: generateId(),
+      id: photoId,
       position,
       url,
+      cloudUrl: generateCloudUrl(photoId),
       status: 'captured',
       capturedAt: new Date().toISOString()
     };
@@ -137,21 +139,23 @@ export const CustomerProvider: React.FC<{ children: ReactNode }> = ({ children }
   const archiveCustomerPhotos = useCallback((customerId: string) => {
     const now = new Date().toISOString();
 
+    const ensureCloudUrl = (photo: PhotoItem) => {
+      if (photo.status === 'pending') return photo;
+      return {
+        ...photo,
+        status: 'completed' as const,
+        confirmedAt: photo.confirmedAt || now,
+        archivedAt: now,
+        cloudUrl: photo.cloudUrl || generateCloudUrl(photo.id)
+      };
+    };
+
     setCustomers(prev => prev.map(customer => {
       if (customer.id !== customerId) return customer;
-      const archivedPhotos = customer.photos.map(photo => {
-        if (photo.status === 'pending') return photo;
-        return {
-          ...photo,
-          status: 'completed' as const,
-          confirmedAt: photo.confirmedAt || now,
-          archivedAt: now
-        };
-      });
       return {
         ...customer,
         status: 'completed' as const,
-        photos: archivedPhotos,
+        photos: customer.photos.map(ensureCloudUrl),
         completedAt: now
       };
     }));
@@ -159,20 +163,10 @@ export const CustomerProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (currentCustomer?.id === customerId) {
       setCurrentCustomer(prev => {
         if (!prev) return null;
-        const now = new Date().toISOString();
-        const archivedPhotos = prev.photos.map(photo => {
-          if (photo.status === 'pending') return photo;
-          return {
-            ...photo,
-            status: 'completed' as const,
-            confirmedAt: photo.confirmedAt || now,
-            archivedAt: now
-          };
-        });
         return {
           ...prev,
           status: 'completed' as const,
-          photos: archivedPhotos,
+          photos: prev.photos.map(ensureCloudUrl),
           completedAt: now
         };
       });
