@@ -289,6 +289,10 @@
   &:disabled {
     opacity: 0.5;
   }
+
+  &.archivedBtn {
+    background: linear-gradient(135deg, $color-success 0%, #389E0D 100%);
+  }
 }
 
 .progressInfo {

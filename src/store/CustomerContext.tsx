@@ -13,6 +13,7 @@ interface CustomerContextType {
   updateCustomerPhoto: (customerId: string, photoId: string, updates: Partial<PhotoItem>) => void;
   addPhoto: (customerId: string, position: string, url: string) => void;
   confirmPhoto: (customerId: string, photoId: string) => void;
+  archiveCustomerPhotos: (customerId: string) => void;
   updateCustomerInfo: (customerId: string, updates: Partial<Customer>) => void;
   updateCustomerStatus: (customerId: string, status: Customer['status']) => void;
   getPendingCustomers: () => Customer[];
@@ -133,6 +134,53 @@ export const CustomerProvider: React.FC<{ children: ReactNode }> = ({ children }
     console.log('[CustomerContext] 确认照片', { customerId, photoId });
   }, [updateCustomerPhoto]);
 
+  const archiveCustomerPhotos = useCallback((customerId: string) => {
+    const now = new Date().toISOString();
+
+    setCustomers(prev => prev.map(customer => {
+      if (customer.id !== customerId) return customer;
+      const archivedPhotos = customer.photos.map(photo => {
+        if (photo.status === 'pending') return photo;
+        return {
+          ...photo,
+          status: 'completed' as const,
+          confirmedAt: photo.confirmedAt || now,
+          archivedAt: now
+        };
+      });
+      return {
+        ...customer,
+        status: 'completed' as const,
+        photos: archivedPhotos,
+        completedAt: now
+      };
+    }));
+
+    if (currentCustomer?.id === customerId) {
+      setCurrentCustomer(prev => {
+        if (!prev) return null;
+        const now = new Date().toISOString();
+        const archivedPhotos = prev.photos.map(photo => {
+          if (photo.status === 'pending') return photo;
+          return {
+            ...photo,
+            status: 'completed' as const,
+            confirmedAt: photo.confirmedAt || now,
+            archivedAt: now
+          };
+        });
+        return {
+          ...prev,
+          status: 'completed' as const,
+          photos: archivedPhotos,
+          completedAt: now
+        };
+      });
+    }
+
+    console.log('[CustomerContext] 归档客户照片', { customerId });
+  }, [currentCustomer]);
+
   const updateCustomerInfo = useCallback((customerId: string, updates: Partial<Customer>) => {
     setCustomers(prev => prev.map(customer =>
       customer.id === customerId ? { ...customer, ...updates } : customer
@@ -176,6 +224,7 @@ export const CustomerProvider: React.FC<{ children: ReactNode }> = ({ children }
         updateCustomerPhoto,
         addPhoto,
         confirmPhoto,
+        archiveCustomerPhotos,
         updateCustomerInfo,
         updateCustomerStatus,
         getPendingCustomers,

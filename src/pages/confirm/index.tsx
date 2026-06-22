@@ -6,19 +6,23 @@ import styles from './index.module.scss';
 import { useCustomer } from '@/store/CustomerContext';
 import StatusTag from '@/components/StatusTag';
 import { PROJECT_TYPE_MAP } from '@/types';
-import { showToast, showModal } from '@/utils';
+import { showToast, showModal, savePhotoFile } from '@/utils';
 
 const ConfirmPage: React.FC = () => {
   const {
     currentCustomer,
     confirmPhoto,
     updateCustomerPhoto,
-    updateCustomerStatus
+    archiveCustomerPhotos
   } = useCustomer();
 
   const projectConfig = useMemo(() => {
     if (!currentCustomer) return null;
     return PROJECT_TYPE_MAP[currentCustomer.projectType];
+  }, [currentCustomer]);
+
+  const isArchived = useMemo(() => {
+    return currentCustomer?.status === 'completed';
   }, [currentCustomer]);
 
   const photosToConfirm = useMemo(() => {
@@ -59,11 +63,14 @@ const ConfirmPage: React.FC = () => {
 
       if (res.tempFiles && res.tempFiles.length > 0) {
         const tempFilePath = res.tempFiles[0].tempFilePath;
+        const savedFilePath = await savePhotoFile(tempFilePath);
+        console.log('[ConfirmPage] 重拍照片已持久化:', savedFilePath);
         updateCustomerPhoto(currentCustomer.id, photoId, {
-          url: tempFilePath,
+          url: savedFilePath,
           status: 'captured',
           capturedAt: new Date().toISOString(),
-          confirmedAt: undefined
+          confirmedAt: undefined,
+          archivedAt: undefined
         });
         showToast('重拍成功', 'success');
         console.log('[ConfirmPage] 重拍成功');
@@ -86,12 +93,20 @@ const ConfirmPage: React.FC = () => {
   const handleSubmit = useCallback(async () => {
     if (!currentCustomer) return;
 
+    if (isArchived) {
+      showToast('该客户照片已归档', 'success');
+      setTimeout(() => {
+        Taro.switchTab({ url: '/pages/compare/index' });
+      }, 800);
+      return;
+    }
+
     const unconfirmed = photosToConfirm.filter(p => p.status === 'captured');
     let tipText = '';
     if (unconfirmed.length > 0) {
       tipText = `其中 ${unconfirmed.length} 张未逐张确认的照片将自动标记为"清晰"，`;
     }
-    tipText += `所有 ${photosToConfirm.length} 张照片将归入"${currentCustomer.treatmentNode}"疗程节点，是否确认？`;
+    tipText += `所有 ${photosToConfirm.length} 张照片将归入"${currentCustomer.treatmentNode}"疗程节点并完成归档，是否确认？`;
 
     const confirmed = await showModal(tipText, '一键确认并归档');
     if (!confirmed) return;
@@ -103,14 +118,14 @@ const ConfirmPage: React.FC = () => {
       console.log('[ConfirmPage] 批量确认', unconfirmed.length, '张照片');
     }
 
-    updateCustomerStatus(currentCustomer.id, 'completed');
+    archiveCustomerPhotos(currentCustomer.id);
     showToast('照片已归档', 'success');
     console.log('[ConfirmPage] 照片已归档', currentCustomer.name);
 
     setTimeout(() => {
       Taro.switchTab({ url: '/pages/compare/index' });
     }, 800);
-  }, [currentCustomer, photosToConfirm, confirmPhoto, updateCustomerStatus]);
+  }, [currentCustomer, photosToConfirm, confirmPhoto, archiveCustomerPhotos, isArchived]);
 
   const handleGoCapture = () => {
     Taro.switchTab({ url: '/pages/capture/index' });
@@ -238,15 +253,23 @@ const ConfirmPage: React.FC = () => {
       <View className={styles.bottomBar}>
         <View className={styles.progressInfo}>
           <Text className={styles.progressText}>
-            已确认 {confirmedCount} / {photosToConfirm.length} 张
-            {unconfirmedCount > 0 && ` · 还有 ${unconfirmedCount} 张待确认`}
+            {isArchived ? (
+              `已归档 ${photosToConfirm.length} 张照片`
+            ) : (
+              <>
+                已确认 {confirmedCount} / {photosToConfirm.length} 张
+                {unconfirmedCount > 0 && ` · 还有 ${unconfirmedCount} 张待确认`}
+              </>
+            )}
           </Text>
         </View>
         <Button
-          className={styles.submitBtn}
+          className={classnames(styles.submitBtn, {
+            [styles.archivedBtn]: isArchived
+          })}
           onClick={handleSubmit}
         >
-          <Text>📸 一键确认并归档</Text>
+          <Text>{isArchived ? '✅ 已归档，查看对比' : '📸 一键确认并归档'}</Text>
         </Button>
       </View>
     </View>

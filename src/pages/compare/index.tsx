@@ -37,9 +37,7 @@ const ComparePage: React.FC = () => {
 
   const filteredPhotos = useMemo(() => {
     if (!selectedCustomer) return [];
-    return selectedCustomer.photos.filter(p => 
-      p.status === 'confirmed' || p.status === 'completed'
-    );
+    return selectedCustomer.photos.filter(p => p.status === 'completed');
   }, [selectedCustomer]);
 
   const handleSelectCustomer = useCallback((customer) => {

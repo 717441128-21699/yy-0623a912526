@@ -19,6 +19,7 @@ export interface PhotoItem {
   status: PhotoStatus;
   capturedAt?: string;
   confirmedAt?: string;
+  archivedAt?: string;
 }
 
 export interface Customer {
@@ -35,6 +36,7 @@ export interface Customer {
   hasPortraitAuth: boolean;
   treatmentNode: string;
   createdAt: string;
+  completedAt?: string;
 }
 
 export interface CaptureGuide {

@@ -7,7 +7,7 @@ import { useCustomer } from '@/store/CustomerContext';
 import PhotoGuide from '@/components/PhotoGuide';
 import { captureGuides } from '@/data/mockData';
 import { PROJECT_TYPE_MAP } from '@/types';
-import { showToast } from '@/utils';
+import { showToast, savePhotoFile } from '@/utils';
 
 const CapturePage: React.FC = () => {
   const { currentCustomer, updateCustomerPhoto, updateCustomerStatus, addPhoto } = useCustomer();
@@ -91,15 +91,18 @@ const CapturePage: React.FC = () => {
         const tempFilePath = res.tempFiles[0].tempFilePath;
         console.log('[CapturePage] 拍照成功:', tempFilePath);
 
+        const savedFilePath = await savePhotoFile(tempFilePath);
+        console.log('[CapturePage] 照片已持久化:', savedFilePath);
+
         const existingPhoto = currentPosition.photo;
         if (existingPhoto) {
           updateCustomerPhoto(currentCustomer.id, existingPhoto.id, {
-            url: tempFilePath,
+            url: savedFilePath,
             status: 'captured',
             capturedAt: new Date().toISOString()
           });
         } else {
-          addPhoto(currentCustomer.id, currentPosition.name, tempFilePath);
+          addPhoto(currentCustomer.id, currentPosition.name, savedFilePath);
         }
 
         showToast('拍摄成功', 'success');

@@ -18,7 +18,7 @@ const projectNames: Record<ProjectType, string[]> = {
 
 const treatmentNodes = ['首次治疗', '第二次治疗', '第三次治疗', '疗程中', '维护期'];
 
-const generatePhotos = (projectType: ProjectType, count: number = 5) => {
+const generatePhotos = (projectType: ProjectType, count: number = 5, allCompleted: boolean = false) => {
   const positionMap: Record<ProjectType, string[]> = {
     water: ['正面', '左侧45°', '右侧45°', '左侧90°', '右侧90°'],
     photo: ['正面', '左侧45°', '右侧45°', '左侧90°', '右侧90°', '局部特写'],
@@ -27,14 +27,29 @@ const generatePhotos = (projectType: ProjectType, count: number = 5) => {
   };
 
   const positions = positionMap[projectType];
-  return positions.slice(0, count).map((position, index) => ({
-    id: `photo_${Date.now()}_${index}`,
-    position,
-    url: `https://picsum.photos/id/${100 + index * 10}/600/800`,
-    status: index < 2 ? 'confirmed' as const : index < 4 ? 'captured' as const : 'pending' as const,
-    capturedAt: new Date(Date.now() - index * 3600000).toISOString(),
-    confirmedAt: index < 2 ? new Date(Date.now() - index * 3600000 + 60000).toISOString() : undefined
-  }));
+  return positions.slice(0, count).map((position, index) => {
+    const baseTime = new Date(Date.now() - index * 3600000);
+    const capturedAt = baseTime.toISOString();
+    const confirmedAt = new Date(baseTime.getTime() + 60000).toISOString();
+    const archivedAt = new Date(baseTime.getTime() + 120000).toISOString();
+
+    let status: 'pending' | 'captured' | 'confirmed' | 'completed';
+    if (allCompleted) {
+      status = 'completed';
+    } else {
+      status = index < 2 ? 'confirmed' : index < 4 ? 'captured' : 'pending';
+    }
+
+    return {
+      id: `photo_${Date.now()}_${index}`,
+      position,
+      url: `https://picsum.photos/id/${100 + index * 10}/600/800`,
+      status,
+      capturedAt,
+      confirmedAt: status === 'confirmed' || status === 'completed' ? confirmedAt : undefined,
+      archivedAt: status === 'completed' ? archivedAt : undefined
+    };
+  });
 };
 
 export const mockCustomers: Customer[] = names.map((name, index) => {
@@ -42,6 +57,12 @@ export const mockCustomers: Customer[] = names.map((name, index) => {
   const projectName = projectNames[projectType][index % projectNames[projectType].length];
   const hour = 9 + Math.floor(index / 2);
   const minute = (index % 2) * 30;
+  const status = index === 0 ? 'photographing' as const :
+    index === 1 ? 'confirming' as const :
+      index < 4 ? 'waiting' as const :
+        index < 7 ? 'completed' as const :
+          'pending_info' as const;
+  const isCompleted = status === 'completed';
 
   return {
     id: `customer_${index + 1}`,
@@ -52,15 +73,12 @@ export const mockCustomers: Customer[] = names.map((name, index) => {
     projectType,
     projectName,
     appointmentTime: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
-    status: index === 0 ? 'photographing' as const : 
-            index === 1 ? 'confirming' as const :
-            index < 4 ? 'waiting' as const :
-            index < 7 ? 'completed' as const :
-            'pending_info' as const,
-    photos: generatePhotos(projectType),
+    status,
+    photos: generatePhotos(projectType, undefined, isCompleted),
     hasPortraitAuth: index % 5 !== 4,
     treatmentNode: treatmentNodes[index % treatmentNodes.length],
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    completedAt: isCompleted ? new Date().toISOString() : undefined
   };
 });
 

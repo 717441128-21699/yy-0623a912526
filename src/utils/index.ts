@@ -73,12 +73,10 @@ export const generateShareToken = (customerId: string): { token: string; expireA
 export const getQrCodeUrl = (customerId: string): { qrImageUrl: string; shareUrl: string; token: string; expireAt: string } => {
   const { token, expireAt, shareUrl } = generateShareToken(customerId);
 
-  const host = 'https://example.miniprogram.com';
-  const fullUrl = `${host}${shareUrl}`;
-  const encodedUrl = encodeURIComponent(fullUrl);
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedUrl}&margin=10`;
+  const encodedPath = encodeURIComponent(shareUrl);
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedPath}&margin=10&color=4A90E2`;
 
-  console.log('[Utils] 生成二维码URL:', { fullUrl, qrImageUrl });
+  console.log('[Utils] 生成二维码:', { customerId, shareUrl, qrImageUrl });
 
   return { qrImageUrl, shareUrl, token, expireAt };
 };
@@ -94,4 +92,26 @@ export const debounce = <T extends (...args: any[]) => any>(
       fn(...args);
     }, delay);
   };
+};
+
+export const savePhotoFile = async (tempFilePath: string): Promise<string> => {
+  try {
+    const fs = Taro.getFileSystemManager();
+    return new Promise((resolve, reject) => {
+      fs.saveFile({
+        tempFilePath,
+        success: (res) => {
+          console.log('[Utils] 照片保存成功:', res.savedFilePath);
+          resolve(res.savedFilePath);
+        },
+        fail: (err) => {
+          console.warn('[Utils] 照片保存失败，使用临时路径:', err);
+          resolve(tempFilePath);
+        }
+      });
+    });
+  } catch (e) {
+    console.warn('[Utils] saveFile 不支持，使用临时路径:', e);
+    return tempFilePath;
+  }
 };
