@@ -1,0 +1,139 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.tipsSection {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+}
+
+.tipsTitle {
+  text-align: center;
+  margin-bottom: $spacing-md;
+}
+
+.tipsTitleText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.tipsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+}
+
+.tipItem {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  text-align: center;
+  @include flex-center;
+  min-height: 120rpx;
+}
+
+.tipText {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  letter-spacing: 4rpx;
+}
+
+.positionInfo {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.positionName {
+  display: block;
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  text-align: center;
+  margin-bottom: $spacing-sm;
+}
+
+.positionDesc {
+  display: block;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  text-align: center;
+  line-height: $line-height-loose;
+}
+
+.exampleSection {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-card;
+}
+
+.exampleHeader {
+  padding: $spacing-md $spacing-lg;
+  background-color: $color-primary-light;
+}
+
+.exampleTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.exampleImageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background-color: #000;
+}
+
+.exampleImage {
+  width: 100%;
+  height: 100%;
+}
+
+.overlayGuide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.guideFrame {
+  position: absolute;
+  top: 10%;
+  left: 15%;
+  right: 15%;
+  bottom: 10%;
+  border: 4rpx dashed rgba(74, 144, 226, 0.6);
+  border-radius: $radius-lg;
+}
+
+.guideLineHorizontal {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2rpx;
+  background-color: rgba(74, 144, 226, 0.4);
+}
+
+.guideLineVertical {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2rpx;
+  background-color: rgba(74, 144, 226, 0.4);
+}

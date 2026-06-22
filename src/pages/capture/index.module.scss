@@ -1,0 +1,274 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: 200rpx;
+}
+
+.content {
+  padding: $spacing-md $page-padding;
+}
+
+.customerCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+  display: flex;
+  align-items: center;
+}
+
+.customerAvatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+}
+
+.customerAvatarText {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.customerInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.customerName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+  display: block;
+}
+
+.customerProject {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-xs;
+}
+
+.projectTag {
+  padding: 4rpx $spacing-sm;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.projectName {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  @include text-ellipsis;
+}
+
+.treatmentNode {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.positionNav {
+  margin-bottom: $spacing-lg;
+}
+
+.positionNavTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.positionScroll {
+  @include scroll-x-container;
+}
+
+.positionItem {
+  @include scroll-x-item(auto);
+  height: 64rpx;
+  padding: 0 $spacing-lg;
+  margin-right: $spacing-sm;
+  border-radius: $radius-button;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+  flex-shrink: 0;
+
+  &:last-child {
+    margin-right: 0;
+  }
+
+  &.completed {
+    background-color: rgba(82, 196, 26, 0.1);
+    border: 2rpx solid $color-success;
+
+    Text {
+      color: $color-success;
+    }
+  }
+
+  &.current {
+    background-color: $color-primary-light;
+    border: 2rpx solid $color-primary;
+
+    Text {
+      color: $color-primary;
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  &.pending {
+    background-color: $color-bg-card;
+    border: 2rpx solid $color-border;
+
+    Text {
+      color: $color-text-tertiary;
+    }
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.positionItemText {
+  font-size: $font-size-sm;
+  white-space: nowrap;
+}
+
+.checkIcon {
+  margin-right: $spacing-xs;
+  font-size: $font-size-sm;
+}
+
+.guideSection {
+  margin-bottom: $spacing-lg;
+}
+
+.emptyState {
+  padding: $spacing-xl * 3 $page-padding;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 160rpx;
+  margin-bottom: $spacing-lg;
+  opacity: 0.3;
+}
+
+.emptyTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.emptyDesc {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  line-height: $line-height-loose;
+  display: block;
+  margin-bottom: $spacing-xl;
+}
+
+.emptyBtn {
+  @include button-reset;
+  display: inline-flex;
+  height: $button-height-lg;
+  padding: 0 $spacing-xl * 2;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  Text {
+    color: $color-text-white;
+  }
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  box-shadow: $shadow-float;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.navBtn {
+  @include button-reset;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-round;
+  background-color: $color-bg-hover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all $transition-base;
+
+  Text {
+    font-size: 40rpx;
+    color: $color-text-secondary;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+.captureBtn {
+  @include button-reset;
+  flex: 1;
+  height: 96rpx;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+
+  Text {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-white;
+  }
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.progressText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  text-align: center;
+  margin-top: $spacing-sm;
+}

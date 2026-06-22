@@ -1,0 +1,158 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: 120rpx;
+}
+
+.header {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  padding: $spacing-xl $page-padding $spacing-lg;
+  border-radius: 0 0 $radius-lg $radius-lg;
+}
+
+.dateSection {
+  text-align: center;
+  margin-bottom: $spacing-lg;
+}
+
+.dateText {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.weekText {
+  font-size: $font-size-md;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-sm;
+}
+
+.statCard {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: $radius-md;
+  padding: $spacing-md $spacing-sm;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.statNumber {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.filterSection {
+  padding: $spacing-md $page-padding 0;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  height: 80rpx;
+  background-color: $color-bg-card;
+  border-radius: $radius-button;
+  padding: 0 $spacing-lg;
+  border: 2rpx solid $color-border;
+  margin-bottom: $spacing-md;
+}
+
+.searchIcon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+  font-size: 32rpx;
+}
+
+.searchInput {
+  flex: 1;
+  height: 100%;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.filterTags {
+  @include scroll-x-container;
+  margin-bottom: $spacing-md;
+}
+
+.filterTag {
+  @include scroll-x-item(auto);
+  height: 64rpx;
+  padding: 0 $spacing-lg;
+  margin-right: $spacing-sm;
+  border-radius: $radius-button;
+  background-color: $color-bg-card;
+  border: 2rpx solid $color-border;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+
+  &:last-child {
+    margin-right: 0;
+  }
+
+  &.active {
+    background-color: $color-primary;
+    border-color: $color-primary;
+
+    Text {
+      color: $color-text-white;
+    }
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.filterTagText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.listSection {
+  padding: $spacing-md $page-padding;
+}
+
+.emptyState {
+  padding: $spacing-xl * 2 $page-padding;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-md;
+  opacity: 0.3;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.refreshHint {
+  text-align: center;
+  padding: $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}

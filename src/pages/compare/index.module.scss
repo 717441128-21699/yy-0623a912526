@@ -1,0 +1,391 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.content {
+  padding: $spacing-md $page-padding;
+}
+
+.customerSection {
+  margin-bottom: $spacing-lg;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.customerScroll {
+  @include scroll-x-container;
+  margin-bottom: $spacing-sm;
+}
+
+.customerItem {
+  @include scroll-x-item(auto);
+  margin-right: $spacing-md;
+  padding: $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  display: inline-flex;
+  align-items: center;
+  border: 3rpx solid transparent;
+  transition: all $transition-base;
+
+  &:last-child {
+    margin-right: 0;
+  }
+
+  &.active {
+    border-color: $color-primary;
+    background-color: $color-primary-light;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.customerAvatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.customerAvatarText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.customerInfo {
+  min-width: 0;
+}
+
+.customerName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.customerProject {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+  max-width: 200rpx;
+}
+
+.selectedCustomer {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.selectedHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.selectedAvatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+}
+
+.selectedAvatarText {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.selectedInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.selectedName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.selectedDetail {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  display: block;
+}
+
+.warningBanner {
+  background-color: rgba(245, 34, 45, 0.08);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  display: flex;
+  align-items: center;
+}
+
+.warningIcon {
+  font-size: $font-size-lg;
+  margin-right: $spacing-sm;
+}
+
+.warningText {
+  font-size: $font-size-sm;
+  color: $color-error;
+  flex: 1;
+}
+
+.treatmentTabs {
+  @include scroll-x-container;
+  margin-bottom: $spacing-md;
+}
+
+.treatmentTab {
+  @include scroll-x-item(auto);
+  height: 64rpx;
+  padding: 0 $spacing-lg;
+  margin-right: $spacing-sm;
+  border-radius: $radius-button;
+  background-color: $color-bg-card;
+  border: 2rpx solid $color-border;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+
+  &:last-child {
+    margin-right: 0;
+  }
+
+  &.active {
+    background-color: $color-primary;
+    border-color: $color-primary;
+
+    Text {
+      color: $color-text-white;
+    }
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.treatmentTabText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-sm;
+}
+
+.photoItem {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: $radius-md;
+  overflow: hidden;
+  background-color: $color-bg-hover;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.photoImage {
+  width: 100%;
+  height: 100%;
+}
+
+.photoLabel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: $spacing-sm;
+}
+
+.photoLabelText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.emptyState {
+  padding: $spacing-xl * 3 $page-padding;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 160rpx;
+  margin-bottom: $spacing-lg;
+  opacity: 0.3;
+}
+
+.emptyTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.emptyDesc {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  line-height: $line-height-loose;
+  display: block;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  box-shadow: $shadow-float;
+}
+
+.generateBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  Text {
+    color: $color-text-white;
+  }
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.qrModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: $page-padding;
+}
+
+.qrContent {
+  background-color: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  width: 100%;
+  max-width: 600rpx;
+  text-align: center;
+}
+
+.qrTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: block;
+}
+
+.qrSubtitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-lg;
+  display: block;
+}
+
+.qrCodeWrapper {
+  width: 400rpx;
+  height: 400rpx;
+  margin: 0 auto $spacing-lg;
+  background-color: $color-bg-hover;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.qrCode {
+  width: 100%;
+  height: 100%;
+}
+
+.qrLink {
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.qrLinkText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  word-break: break-all;
+}
+
+.closeBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background-color: $color-bg-hover;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  Text {
+    color: $color-text-secondary;
+  }
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
